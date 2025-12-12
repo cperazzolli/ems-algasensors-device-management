@@ -1,5 +1,6 @@
 package com.cperazzolli.algasensors.device.management;
 
+import com.cperazzolli.algasensors.device.management.common.IDGenerator;
 import io.hypersistence.tsid.TSID;
 
 

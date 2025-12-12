@@ -1,4 +1,4 @@
-package com.cperazzolli.algasensors.device.management;
+package com.cperazzolli.algasensors.device.management.common;
 
 import io.hypersistence.tsid.TSID;
 
