@@ -1,5 +1,6 @@
 package com.cperazzolli.algasensors.device.management.api.controller;
 
+import com.cperazzolli.algasensors.device.management.api.client.SensorMonitoringClient;
 import com.cperazzolli.algasensors.device.management.api.model.SensorInput;
 import com.cperazzolli.algasensors.device.management.api.model.SensorOutput;
 import com.cperazzolli.algasensors.device.management.common.IDGenerator;
@@ -21,6 +22,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class SensorController {
 
     private final SensorRepository sensorRepository;
+    private final SensorMonitoringClient sensorMonitoringClient;
 
     @GetMapping
     public Page<SensorOutput> getAll(@PageableDefault Pageable page) {
@@ -28,7 +30,7 @@ public class SensorController {
         return pageAble.map(this::convertToModel);
     }
     @GetMapping("{sensorId}")
-    public SensorOutput getOne(@PathVariable TSID sensorId) {
+    public SensorOutput getOne(@PathVariable("sensorId") TSID sensorId) {
         Sensor sensor = sensorRepository.findById(new SensorId(sensorId))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
@@ -54,7 +56,7 @@ public class SensorController {
 
     @PutMapping("{sensorId}")
     @ResponseStatus(HttpStatus.OK)
-    public void update(@PathVariable TSID sensorId, @RequestBody SensorInput input) {
+    public void update(@PathVariable("sensorId") TSID sensorId, @RequestBody SensorInput input) {
         Sensor sensor = sensorRepository.findById(new SensorId(sensorId))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         sensor.setName(input.getName());
@@ -67,28 +69,31 @@ public class SensorController {
 
     @PutMapping("{sensorId}/enable")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void enable(@PathVariable TSID sensorId) {
+    public void enable(@PathVariable("sensorId") TSID sensorId) {
         Sensor sensor = sensorRepository.findById(new SensorId(sensorId))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         sensor.setEnabled(true);
         sensorRepository.saveAndFlush(sensor);
+        sensorMonitoringClient.enableMonitoring(sensorId);
     }
 
     @DeleteMapping("{sensorId}/enable")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void disable(@PathVariable TSID sensorId) {
+    public void disable(@PathVariable("sensorId") TSID sensorId) {
         Sensor sensor = sensorRepository.findById(new SensorId(sensorId))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         sensor.setEnabled(false);
         sensorRepository.saveAndFlush(sensor);
+        sensorMonitoringClient.disableMonitoring(sensorId);
     }
 
     @DeleteMapping("{sensorId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable TSID sensorId) {
+    public void delete(@PathVariable("sensorId") TSID sensorId) {
         Sensor sensor = sensorRepository.findById(new SensorId(sensorId))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         sensorRepository.delete(sensor);
+        sensorMonitoringClient.disableMonitoring(sensorId);
     }
 
     private SensorOutput convertToModel(Sensor sensor) {
