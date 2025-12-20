@@ -1,7 +1,9 @@
 package com.cperazzolli.algasensors.device.management.api.controller;
 
 import com.cperazzolli.algasensors.device.management.api.client.SensorMonitoringClient;
+import com.cperazzolli.algasensors.device.management.api.model.SensorDetailOutput;
 import com.cperazzolli.algasensors.device.management.api.model.SensorInput;
+import com.cperazzolli.algasensors.device.management.api.model.SensorMonitoringOutput;
 import com.cperazzolli.algasensors.device.management.api.model.SensorOutput;
 import com.cperazzolli.algasensors.device.management.common.IDGenerator;
 import com.cperazzolli.algasensors.device.management.domain.model.Sensor;
@@ -29,12 +31,25 @@ public class SensorController {
         Page<Sensor> pageAble = sensorRepository.findAll(page);
         return pageAble.map(this::convertToModel);
     }
+
     @GetMapping("{sensorId}")
     public SensorOutput getOne(@PathVariable("sensorId") TSID sensorId) {
         Sensor sensor = sensorRepository.findById(new SensorId(sensorId))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
         return convertToModel(sensor);
+    }
+
+    @GetMapping("{sensorId}/detail")
+    public SensorDetailOutput getOneWithDetail(@PathVariable("sensorId") TSID sensorId) {
+        Sensor sensor = sensorRepository.findById(new SensorId(sensorId))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        SensorMonitoringOutput sensorMonitoringOutput = sensorMonitoringClient.getSensorMonitoring(sensorId);
+        SensorOutput sensorOutput = convertToModel(sensor);
+        return SensorDetailOutput.builder()
+                .monitoring(sensorMonitoringOutput)
+                .sensor(sensorOutput)
+                .build();
     }
 
     @PostMapping
