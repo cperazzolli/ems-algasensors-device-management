@@ -4,7 +4,6 @@ import com.cperazzolli.algasensors.device.management.api.client.RestClientFactor
 import com.cperazzolli.algasensors.device.management.api.client.SensorMonitoringClient;
 import com.cperazzolli.algasensors.device.management.api.model.SensorMonitoringOutput;
 import io.hypersistence.tsid.TSID;
-import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
 
